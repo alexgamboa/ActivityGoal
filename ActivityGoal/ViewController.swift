@@ -27,7 +27,7 @@ class ViewController: UIViewController {
     func updateLabels() {
         let readTypes: Set<HKObjectType> = Set([activityType])
         self.healthStore.requestAuthorization(toShare: nil, read: readTypes) {
-            (success: Bool, error: NSError?) -> Void in
+            (success: Bool, error: Error?) -> Void in
             if success {
                 self.queryHealth()
             }
@@ -35,16 +35,13 @@ class ViewController: UIViewController {
     }
 
     func queryHealth() {
-        guard let calendar = Calendar(
-                calendarIdentifier: Calendar.Identifier.gregorian) else {
-            fatalError()
-        }
+        let calendar = Calendar(identifier: Calendar.Identifier.gregorian)
         let startDate = Date.distantPast
         let endDate = Date()
-        let units: Calendar.Unit = [.day, .month, .year, .era]
-        var startDateComponents = calendar.components(units, from: startDate)
+        let units: Set<Calendar.Component> = [.day, .month, .year, .era]
+        var startDateComponents = calendar.dateComponents(units, from: startDate)
         startDateComponents.calendar = calendar
-        var endDateComponents = calendar.components(units, from: endDate)
+        var endDateComponents = calendar.dateComponents(units, from: endDate)
         endDateComponents.calendar = calendar
 
         let summariesWithinRange = HKQuery.predicate(
@@ -55,7 +52,7 @@ class ViewController: UIViewController {
         let query = HKActivitySummaryQuery(predicate: summariesWithinRange) {(
             query: HKActivitySummaryQuery,
             summaries: [HKActivitySummary]?,
-            error: NSError?) in
+            error: Error?) in
             var activityCount = 0
             var activityGoalAchievedCount = 0
             if let summaries = summaries {
